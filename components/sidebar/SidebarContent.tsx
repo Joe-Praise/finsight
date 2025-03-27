@@ -60,7 +60,7 @@ export default function SidebarContent() {
           return (
             <NavLink
               key={`${route.path}-#${i}__${route.name}__key`}
-              to={route.path}
+              to={''}
               name={route.name}
               className={cn('flex items-center gap-3', {
                 'justify-center w-[80%] mx-auto': isIcons,

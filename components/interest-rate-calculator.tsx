@@ -229,7 +229,7 @@ const InterestRateCalculator = () => {
   ];
   return (
     <div className='flex flex-col lg:flex-row min-h-screen w-full'>
-      <div className='flex lg:flex-col items-center justify-between lg:justify-start p-4 lg:py-4 bg-gray-100 border-b lg:border-r border-gray-200'>
+      <div className='flex lg:flex-col items-center justify-between lg:justify-start p-4 lg:py-4 bg-background border-b lg:border-r border-gray-200'>
         <Button
           variant='ghost'
           size='icon'

@@ -40,7 +40,10 @@ const Logo = (props: ILogo) => {
         </div>
       )}
       {!isIcons && (
-        <Link href={''} className='flex flex-col items-start h-full text-white'>
+        <Link
+          href={''}
+          className='flex flex-col items-start h-full text-primary'
+        >
           <span className='uppercase font-karla font-bold'>Finsight</span>
           <span className='text-xs font-medium leading-none tracking-tighter'>
             See, Understand, Prosper.

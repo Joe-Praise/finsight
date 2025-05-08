@@ -20,20 +20,20 @@ import {
   TableHeader,
   TableRow,
 } from './ui/table';
-import { InterestCalculator } from '@/lib/interest-math-module';
+import {
+  CompoundingFrequency,
+  CompoundingMap,
+  InterestCalculator,
+  InterestTypeEnum,
+} from '@/lib/interest-math-module';
 import { calculateDuration } from '@/lib/helper';
-
-enum InterestTypeEnum {
-  Simple = 'simple',
-  Compound = 'compound',
-  Continuous = 'continuous',
-}
 
 interface IInterestConfig {
   type: InterestTypeEnum;
   principal: number | null;
   rate: number | null;
   months: number | null;
+  compoundFrequency?: string | null;
   return?: number | null;
 }
 
@@ -52,6 +52,13 @@ const interestType = [
   },
 ];
 
+const frequencyType = Object.keys(CompoundingMap).map((key) => {
+  return {
+    label: key,
+    value: key.toLowerCase(),
+  };
+});
+
 const InterestRateCalculator = () => {
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(true);
   const [overlay, setOverlay] = useState(false);
@@ -61,7 +68,9 @@ const InterestRateCalculator = () => {
     rate: null,
     months: null,
     return: null,
+    compoundFrequency: 'annually',
   });
+  const monthsBoundary = 600;
   const [tableResult, setTableResult] = useState<Array<IInterestConfig>>([]);
 
   const [result, setResult] = useState<string | null>(null);
@@ -76,130 +85,52 @@ const InterestRateCalculator = () => {
     }));
   };
 
-  const calculateSimpleInterest = (
-    principal: number,
-    rate: number,
-    months: number
-  ) => {
-    if (!(principal || rate || months)) return;
-    const piggyVest = new InterestCalculator(rate, months);
-    const results: Array<IInterestConfig> = [];
-    for (let i = 1; i <= months; i++) {
-      const value = piggyVest.calculateSimpleInterest(principal, i).toFixed(2);
-
-      const data: IInterestConfig = {
-        type: InterestTypeEnum.Simple,
-        principal,
-        rate,
-        months: i,
-        return: parseFloat(value),
-      };
-      results.push(data);
-    }
-    const returnValue = results.at(-1);
-    if (returnValue !== undefined) {
-      setResult(returnValue.return?.toString() ?? null);
-      setTableResult(results);
-    }
-
-    return;
-  };
-
-  const calculateCompoundInterest = (
-    principal: number,
-    rate: number,
-    months: number
-  ) => {
-    if (!(principal || rate || months)) return;
-    const piggyVest = new InterestCalculator(rate, months);
-    const results: Array<IInterestConfig> = [];
-    for (let i = 1; i <= months; i++) {
-      const value = piggyVest
-        .calculateCompoundInterest(principal, i)
-        .toFixed(2);
-
-      const data: IInterestConfig = {
-        type: InterestTypeEnum.Simple,
-        principal,
-        rate,
-        months: i,
-        return: parseFloat(value),
-      };
-      results.push(data);
-    }
-    const returnValue = results.at(-1);
-    if (returnValue !== undefined) {
-      setResult(returnValue.return?.toString() ?? null);
-      setTableResult(results);
-    }
-    return;
-  };
-
-  const calculateContinuousInterest = (
-    principal: number,
-    rate: number,
-    months: number
-  ) => {
-    if (!(principal || rate || months)) return;
-    const piggyVest = new InterestCalculator(rate, months);
-
-    const results: Array<IInterestConfig> = [];
-    for (let i = 1; i <= months; i++) {
-      const value = piggyVest
-        .calculateContinuousInterest(principal, i)
-        .toFixed(2);
-
-      const data: IInterestConfig = {
-        type: InterestTypeEnum.Simple,
-        principal,
-        rate,
-        months: i,
-        return: parseFloat(value),
-      };
-      results.push(data);
-    }
-    const returnValue = results.at(-1);
-    if (returnValue !== undefined) {
-      setResult(returnValue.return?.toString() ?? null);
-      setTableResult(results);
-    }
-    return;
-  };
-
   const handleRunCalculation = (type: string) => {
-    switch (type) {
-      case InterestTypeEnum.Simple:
-        {
-          calculateSimpleInterest(
-            interestConfig.principal ?? 0,
-            interestConfig.rate ?? 0,
-            interestConfig.months ?? 0
-          );
-        }
-        break;
-      case InterestTypeEnum.Compound:
-        {
-          calculateCompoundInterest(
-            interestConfig.principal ?? 0,
-            interestConfig.rate ?? 0,
-            interestConfig.months ?? 0
-          );
-        }
-        break;
-      case InterestTypeEnum.Continuous:
-        {
-          calculateContinuousInterest(
-            interestConfig.principal ?? 0,
-            interestConfig.rate ?? 0,
-            interestConfig.months ?? 0
-          );
-        }
-        break;
-      default:
-        return;
+    if (
+      !(
+        interestConfig.principal ||
+        interestConfig.rate ||
+        interestConfig.months
+      )
+    )
+      return;
+    const interestCalc = new InterestCalculator({
+      rate: interestConfig.rate ?? 0,
+      frequency:
+        (interestConfig.compoundFrequency as CompoundingFrequency) ??
+        ('monthly' as CompoundingFrequency),
+      type: type as InterestTypeEnum,
+      locale: 'en-US',
+      currency: 'USD',
+    });
+
+    const results: Array<IInterestConfig> = [];
+    for (
+      let i = 1;
+      i <= Math.min(interestConfig.months ?? 0, monthsBoundary);
+      i++
+    ) {
+      const value = interestCalc
+        .calculate(interestConfig.principal ?? 0, i)
+        .toFixed(2);
+
+      const data: IInterestConfig = {
+        type: interestConfig.type,
+        principal: interestConfig.principal,
+        rate: interestConfig.rate,
+        months: i,
+        return: parseFloat(value.toString()),
+      };
+      results.push(data);
+    }
+    const returnValue = results.at(-1);
+    if (returnValue !== undefined) {
+      setResult(returnValue.return?.toString() ?? null);
+      setTableResult(results);
     }
 
     setOverlay((prev) => !prev);
+    return;
   };
 
   function thousandSeperator(value: number) {
@@ -227,6 +158,7 @@ const InterestRateCalculator = () => {
       desc: 'The ultimate form of compounding, where interest is applied infinitely using A = Pe^(rt), leading to the fastest growth.',
     },
   ];
+
   return (
     <div className='flex flex-col lg:flex-row min-h-screen w-full'>
       <div className='flex lg:flex-col items-center justify-between lg:justify-start p-4 lg:py-4 bg-background border-b lg:border-r border-gray-200'>
@@ -320,9 +252,15 @@ const InterestRateCalculator = () => {
       <Card className='flex-1 overflow-hidden'>
         <CardContent className='p-4 lg:p-6'>
           <div className='mb-6'>
-            <Label htmlFor='globalMaxRetries'>Max Months: 30</Label>
+            <Label htmlFor='globalMaxRetries'>
+              Max Months: {monthsBoundary}
+            </Label>
             <p>
-              Result: {result} after {constructResultMessage()}{' '}
+              Result:{' '}
+              {result
+                ? thousandSeperator(Number(parseFloat(result).toFixed()))
+                : 0}{' '}
+              after {constructResultMessage()}{' '}
             </p>
           </div>
 
@@ -355,9 +293,10 @@ const InterestRateCalculator = () => {
                     <select
                       id='type'
                       name='type'
-                      value={interestConfig.type}
+                      value={interestConfig.type || undefined}
                       onChange={handleInputChange}
                       className='w-full p-2 border rounded'
+                      defaultValue={'Select One'}
                     >
                       {interestType.map((type, index) => {
                         return (
@@ -371,20 +310,67 @@ const InterestRateCalculator = () => {
                       })}
                     </select>
                   </div>
+                  {interestConfig.type === InterestTypeEnum.Compound && (
+                    <div>
+                      <Label htmlFor='type'>Interest Type</Label>
+                      <select
+                        id='compoundFrequency'
+                        name='compoundFrequency'
+                        value={interestConfig.compoundFrequency || undefined}
+                        onChange={handleInputChange}
+                        className='w-full p-2 border rounded capitalize'
+                      >
+                        {frequencyType.map((type, index) => {
+                          return (
+                            <option
+                              key={`${type.value}__${index}_key`}
+                              value={type.value}
+                            >
+                              {type.label}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+                  )}
+
                   <div>
                     <Label htmlFor='principal'>Amount</Label>
                     <Input
                       id='principal'
                       name='principal'
-                      type='number'
+                      type='text' // Changed from 'number' to 'text' to allow commas
                       inputMode='numeric'
-                      pattern='[0-9]*'
+                      pattern='[0-9,]*'
                       onInput={(e) => {
                         const target = e.target as HTMLInputElement;
-                        target.value = target.value.replace(/^0+(?=\d)/, '');
+                        // Remove non-numeric characters
+                        let value = target.value.replace(/[^\d]/g, '');
+                        // Remove leading zeros
+                        value = value.replace(/^0+(?=\d)/, '');
+                        // Format with thousand separators
+                        value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        target.value = value;
                       }}
-                      value={interestConfig.principal ?? ''}
-                      onChange={handleInputChange}
+                      value={
+                        interestConfig.principal
+                          ? interestConfig.principal.toLocaleString()
+                          : ''
+                      }
+                      onChange={(e) => {
+                        // Remove commas before converting to number
+                        const numericValue = e.target.value.replace(/,/g, '');
+                        const event = {
+                          ...e,
+                          target: {
+                            ...e.target,
+                            value: numericValue,
+                            name: 'principal',
+                            type: 'number',
+                          },
+                        };
+                        handleInputChange(event);
+                      }}
                     />
                   </div>
                   <div>

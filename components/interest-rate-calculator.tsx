@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { Button } from './ui/button';
 import { Menu } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -13,20 +13,12 @@ import {
 } from './ui/dialog';
 import { Input } from './ui/input';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from './ui/table';
-import {
   CompoundingFrequency,
   CompoundingMap,
   InterestCalculator,
   InterestTypeEnum,
 } from '@/lib/interest-math-module';
-import { calculateDuration } from '@/lib/helper';
+import { calculateDuration, thousandSeperator } from '@/lib/helper';
 import {
   Drawer,
   DrawerClose,
@@ -37,15 +29,23 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+import { DataTableDemo } from './interest-rate-table';
+import useFormatText from '@/hooks/useFormatText';
+import { cn } from '@/lib/utils';
 
-interface IInterestConfig {
-  type: InterestTypeEnum;
+dayjs.extend(duration);
+
+export interface IInterestConfig {
+  type: InterestTypeEnum | null;
   principal: number | null;
   requiredReturn?: number | null;
   rate: number | null;
   months: number | null;
   compoundFrequency?: string | null;
   return?: number | null;
+  duration?: number | null;
 }
 
 const interestType = [
@@ -74,11 +74,45 @@ const frequencyType = Object.keys(CompoundingMap).map((key) => {
   };
 });
 
+const details_break_down = [
+  {
+    title: 'Simple Interest',
+    desc: `Calculated only on the initial deposit./n
+Formula: A = P(1 + rt) /n
+- A: Final amount /n
+- P: Principal /n
+- r: Annual interest rate /n
+- t: Time in years`,
+  },
+  {
+    title: 'Compound Interest',
+    desc: `Interest is added to the principal at regular intervals, causing exponential growth. /n
+Formula: A = P(1 + r/n)ⁿᵗ  /n
+- n: Number of times compounded per year`,
+  },
+  {
+    title: 'Continuous Interest',
+    desc: `Interest compounds continuously, meaning it's added at every possible moment.  /n
+Formula: A = Pe^(rt)  /n
+- e: Euler’s number (≈ 2.718)`,
+  },
+  {
+    title: 'Required Return',
+    desc: `Used to calculate how much you need to invest now to earn a specific interest amount over time.  /n
+Formula: P = A / (1 + r/n)ⁿᵗ  /n
+- A: Desired final amount (principal + interest) /n
+- r: Annual interest rate /n
+- n: Compounding frequency /n
+- t: Time in years`,
+  },
+];
+
 const InterestRateCalculator = () => {
+  const { formatText } = useFormatText();
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(true);
   const [overlay, setOverlay] = useState(false);
   const [interestConfig, setInterestConfig] = useState<IInterestConfig>({
-    type: InterestTypeEnum.Simple,
+    type: null,
     principal: null,
     rate: null,
     months: null,
@@ -107,7 +141,8 @@ const InterestRateCalculator = () => {
         interestConfig.principal ||
         interestConfig.rate ||
         interestConfig.months
-      )
+      ) ||
+      interestConfig.type === null
     )
       return;
 
@@ -122,91 +157,116 @@ const InterestRateCalculator = () => {
     });
 
     if (interestConfig.type === InterestTypeEnum['Required Return']) {
-      const neededDeposit = interestCalc.requiredDeposit(
-        interestConfig.requiredReturn ?? 0,
-        interestConfig.months ?? 1
-      );
-
-      console.log(
-        '🚀 ~ handleRunCalculation ~ neededDeposit:',
-        neededDeposit.toFixed(2)
-      );
+      handleRequiredReturnCalculation(interestCalc);
     } else {
-      const results: Array<IInterestConfig> = [];
-      for (
-        let i = 1;
-        i <= Math.min(interestConfig.months ?? 0, monthsBoundary);
-        i++
-      ) {
-        const value = interestCalc
-          .calculate(interestConfig.principal ?? 0, i)
-          .toFixed(2);
-
-        const data: IInterestConfig = {
-          type: interestConfig.type,
-          principal: interestConfig.principal,
-          rate: interestConfig.rate,
-          months: i,
-          return: parseFloat(value.toString()),
-        };
-        results.push(data);
-      }
-      const returnValue = results.at(-1);
-      if (returnValue !== undefined) {
-        setResult(returnValue.return?.toString() ?? null);
-        setTableResult(results);
-      }
+      handleStandardCalculation(interestCalc);
     }
+
     setOverlay((prev) => !prev);
     return;
   };
 
-  function thousandSeperator(value: number) {
-    const formatter = new Intl.NumberFormat('en-US');
-    return formatter.format(value);
-  }
+  const handleRequiredReturnCalculation = (
+    interestCalc: InterestCalculator
+  ) => {
+    const neededDeposit = interestCalc.requiredDeposit(
+      interestConfig.requiredReturn ?? 0,
+      interestConfig.months ?? 1
+    );
+    setResult(neededDeposit.toString() ?? null);
 
-  const constructResultMessage = () => {
-    const result = calculateDuration(interestConfig.months ?? 0);
-    // FIXME: update value to appropriately return the result string.
-    return ` ${result}`;
+    const results = generateResults(interestCalc, neededDeposit);
+    const returnValue = results.at(-1);
+
+    if (returnValue !== undefined) {
+      setResult(neededDeposit.toString() ?? null);
+      setTableResult(results);
+    }
   };
 
-  const details_break_down = [
-    {
-      title: 'Simple Interest',
-      desc: 'Calculated on the principal alone using the formula A = P(1 + rt), where growth remains linear over time.',
-    },
-    {
-      title: 'Compound Interest',
-      desc: 'Interest is added to the principal at regular intervals, leading to exponential growth using A = P(1 + r/n)ⁿᵗ.',
-    },
-    {
-      title: 'Continuous Interest',
-      desc: 'The ultimate form of compounding, where interest is applied infinitely using A = Pe^(rt), leading to the fastest growth.',
-    },
-  ];
+  const handleStandardCalculation = (interestCalc: InterestCalculator) => {
+    const results = generateResults(
+      interestCalc,
+      interestConfig.principal ?? 0
+    );
+    const returnValue = results.at(-1);
+
+    if (returnValue !== undefined) {
+      setResult(returnValue.return?.toString() ?? null);
+      setTableResult(results);
+    }
+  };
+
+  const generateResults = (
+    interestCalc: InterestCalculator,
+    principal: number
+  ): Array<IInterestConfig> => {
+    const results: Array<IInterestConfig> = [];
+    for (
+      let i = 1;
+      i <= Math.min(interestConfig.months ?? 0, monthsBoundary);
+      i++
+    ) {
+      const value = interestCalc.calculate(principal, i).toFixed(2);
+
+      const data: IInterestConfig = {
+        type: interestConfig.type,
+        principal: principal,
+        rate: interestConfig.rate,
+        months: i,
+        return: parseFloat(value.toString()),
+        duration: i,
+      };
+      results.push(data);
+    }
+    return results;
+  };
+
+  const createResultStatement = () => {
+    if (!interestConfig?.type || !result) {
+      return 'Crunch the numbers and watch your interest appear.';
+    }
+
+    if (interestConfig.type === InterestTypeEnum['Required Return']) {
+      return `You need to deposit ${thousandSeperator(
+        Number(result).toFixed(2)
+      )} to earn ${thousandSeperator(
+        (interestConfig.requiredReturn ?? 0).toFixed(2)
+      )} interest in ${calculateDuration(interestConfig.months ?? 0)} at ${
+        interestConfig.rate
+      }% compounded ${interestConfig.compoundFrequency}.`;
+    }
+
+    return `Your deposit of ${thousandSeperator(
+      Number(interestConfig.principal ?? 0).toFixed(2)
+    )} will earn you ${thousandSeperator(
+      Number(result).toFixed(2)
+    )} interest in ${calculateDuration(interestConfig.months ?? 0)} at ${
+      interestConfig.rate
+    }% compounded ${interestConfig.compoundFrequency}.`;
+  };
 
   return (
     <div className='flex flex-col lg:flex-row min-h-screen w-full'>
-      <div className='flex lg:flex-col items-center justify-between lg:justify-start p-4 lg:py-4 bg-background'>
+      <div className='flex lg:flex-col items-center justify-between lg:justify-start p-4 lg:py-4 bg-background '>
         <Drawer>
-          <DrawerTrigger>
+          <DrawerTrigger asChild>
             <Button
               variant='ghost'
               size='icon'
               onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
-              className='lg:mb-4 group'
+              className='lg:mb-4 group hover:bg-black dark:hover:bg-white'
             >
-              <Menu className='h-6 w-6 group-hover:text-white  dark:group-hover:text-white' />
+              <Menu className='h-6 w-6 group-hover:text-white dark:group-hover:text-black' />
               <span className='sr-only'>
                 {isDescriptionOpen ? 'Close' : 'Open'} description
               </span>
             </Button>
           </DrawerTrigger>
-          <DrawerContent>
-            <DrawerHeader className='text-left'>
-              <DrawerTitle>Interest Rate Visulaizer</DrawerTitle>
+
+          <DrawerContent className='h-screen  '>
+            <DrawerHeader className='text-left sticky top-0'>
+              <DrawerTitle>Interest Rate Visualizer</DrawerTitle>
               <DrawerDescription>
                 The Interest Rate Visualizer is an interactive tool designed to
                 help users understand and compare different types of interest
@@ -216,33 +276,38 @@ const InterestRateCalculator = () => {
                 various interest rates and compounding frequencies.
               </DrawerDescription>
             </DrawerHeader>
-            <div className='p-4 h-full flex flex-col gap-3'>
-              <Card className='flex-grow overflow-hidden flex flex-col px-1 border-none'>
+
+            <div className='p-4 flex flex-col gap-3 overflow-y-auto '>
+              <Card className='flex flex-col px-1 border-none'>
                 <CardHeader>
                   <CardTitle>Types of Interest</CardTitle>
                 </CardHeader>
-                <CardContent className='space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto p-0'>
-                  <div>
-                    <ul className='list-disc list-inside text-sm text-muted-foreground space-y-2 flex-col gap-3'>
-                      {details_break_down?.map((detail, index) => {
-                        return (
-                          <li
-                            key={`${detail.title}_${detail.desc}_${index}__key`}
+                <CardContent className='space-y-4 p-0'>
+                  <ul className='list-disc list-inside text-sm text-muted-foreground space-y-2 flex-col gap-3'>
+                    {details_break_down?.map((detail, index) => (
+                      <li key={`${detail.title}_${detail.desc}_${index}__key`}>
+                        <span className='font-medium text-primary'>
+                          {detail.title}:{' '}
+                        </span>
+                        {formatText(detail.desc).map((textBlock, idx) => (
+                          <p
+                            key={idx}
+                            className={cn({
+                              'inline-block ml-1': idx === 0,
+                              'ml-5': idx > 0,
+                            })}
                           >
-                            <span className='font-medium text-primary'>
-                              {detail.title}:
-                            </span>{' '}
-                            {detail.desc}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
+                            {textBlock}
+                          </p>
+                        ))}
+                      </li>
+                    ))}
+                  </ul>
                 </CardContent>
               </Card>
             </div>
-            <DrawerFooter>
-              <DrawerClose>
+            <DrawerFooter className='sticky bottom-0 mt-auto'>
+              <DrawerClose asChild>
                 <Button>Close</Button>
               </DrawerClose>
             </DrawerFooter>
@@ -254,15 +319,113 @@ const InterestRateCalculator = () => {
         <CardContent className='p-4 lg:p-6'>
           <div className='mb-6'>
             <Label htmlFor='globalMaxRetries'>
-              Max Months: {monthsBoundary}
+              Max Months: {monthsBoundary} (50 years)
             </Label>
-            <p>
-              Result:{' '}
-              {result
-                ? thousandSeperator(Number(parseFloat(result).toFixed()))
-                : 0}{' '}
-              after {constructResultMessage()}{' '}
-            </p>
+            <p>{createResultStatement()}</p>
+          </div>
+
+          <div className='mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4'>
+            <Card className='border p-2'>
+              <CardHeader className='flex flex-row items-center justify-between pb-2'>
+                <CardTitle className='text-sm font-medium'>
+                  Total Revenue
+                </CardTitle>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth='2'
+                  className='h-4 w-4 text-muted-foreground'
+                >
+                  <path d='M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' />
+                </svg>
+              </CardHeader>
+              <CardContent>
+                <div className='text-2xl font-bold'>$45,231.89</div>
+                <p className='text-xs text-muted-foreground'>
+                  +20.1% from last month
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className='flex flex-row items-center justify-between pb-2'>
+                <CardTitle className='text-sm font-medium'>
+                  Subscriptions
+                </CardTitle>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth='2'
+                  className='h-4 w-4 text-muted-foreground'
+                >
+                  <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
+                  <circle cx='9' cy='7' r='4' />
+                  <path d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' />
+                </svg>
+              </CardHeader>
+              <CardContent>
+                <div className='text-2xl font-bold'>+2350</div>
+                <p className='text-xs text-muted-foreground'>
+                  +180.1% from last month
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className='flex flex-row items-center justify-between pb-2'>
+                <CardTitle className='text-sm font-medium'>Sales</CardTitle>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth='2'
+                  className='h-4 w-4 text-muted-foreground'
+                >
+                  <rect width='20' height='14' x='2' y='5' rx='2' />
+                  <path d='M2 10h20' />
+                </svg>
+              </CardHeader>
+              <CardContent>
+                <div className='text-2xl font-bold'>+12,234</div>
+                <p className='text-xs text-muted-foreground'>
+                  +19% from last month
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className='flex flex-row items-center justify-between pb-2'>
+                <CardTitle className='text-sm font-medium'>
+                  Active Users
+                </CardTitle>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth='2'
+                  className='h-4 w-4 text-muted-foreground'
+                >
+                  <path d='M22 12h-4l-3 9L9 3l-3 9H2' />
+                </svg>
+              </CardHeader>
+              <CardContent>
+                <div className='text-2xl font-bold'>+573</div>
+                <p className='text-xs text-muted-foreground'>
+                  +201 since last hour
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
           <Dialog open={overlay} onOpenChange={setOverlay}>
@@ -271,7 +434,7 @@ const InterestRateCalculator = () => {
                 className='mb-4 w-full lg:w-auto'
                 // onClick={() => setOverlay((prev) => !prev)}
               >
-                Add New Configuration
+                Calculate Interest
               </Button>
             </DialogTrigger>
             <DialogContent
@@ -279,11 +442,11 @@ const InterestRateCalculator = () => {
               aria-describedby='dialog-description'
             >
               <DialogHeader>
-                <DialogTitle>{'Add New Configuration'}</DialogTitle>
+                <DialogTitle>{'Calculate Interest'}</DialogTitle>
               </DialogHeader>
               <p id='dialog-description'>
-                This form allows you to add a new interest configuration by
-                specifying the type, principal, rate, and duration.
+                This form allows you to calculate interest by specifying the
+                type, principal, rate, and duration.
               </p>
               <form className='space-y-4'>
                 <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
@@ -296,6 +459,7 @@ const InterestRateCalculator = () => {
                       onChange={handleInputChange}
                       className='w-full p-2 border rounded'
                     >
+                      <option selected>Select one</option>
                       {interestType.map((type, index) => (
                         <option
                           key={`${type.value}__${index}_key`}
@@ -454,7 +618,9 @@ const InterestRateCalculator = () => {
                   //   }
                   className='w-full'
                   onClick={() => {
-                    handleRunCalculation(interestConfig.type);
+                    handleRunCalculation(
+                      interestConfig.type ?? InterestTypeEnum.Simple
+                    );
                   }}
                 >
                   {'Add'} Configuration
@@ -462,7 +628,7 @@ const InterestRateCalculator = () => {
               </form>
             </DialogContent>
           </Dialog>
-
+          {/* 
           <div className='overflow-x-auto'>
             <Table className='mb-6'>
               <TableHeader>
@@ -488,62 +654,25 @@ const InterestRateCalculator = () => {
                     <TableCell>
                       {thousandSeperator(config.return ?? 0) || 'N/A'}
                     </TableCell>
-                    {/* <TableCell>{config?.jitter ? 'Yes' : 'No'}</TableCell> */}
+                    <TableCell>{config?.jitter ? 'Yes' : 'No'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-          </div>
+          </div> */}
 
-          {/* <div className="h-[300px] lg:h-[400px]" ref={chartRef}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart 
-            data={chartData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="retryCount" 
-              type="number"
-              domain={[0, globalMaxRetries]}
-              tickFormatter={(value) => `${value}`}
-              label={{ value: "Number of Retries", position: "bottom", offset: 0 }}
-            />
-            <YAxis 
-              tickFormatter={(value) => formatTime(value)}
-              width={80}
-            />
-            <Tooltip 
-              formatter={(value: number) => formatTime(value)}
-              labelFormatter={(label: number) => `Retry Count: ${label}`}
-            />
-            <Legend 
-              verticalAlign="top"
-              align="center"
-              layout="horizontal"
-              margin={{ top: 0, left: 0, right: 0, bottom: 10 }}
-            />
-            {configs.map((_, index) => (
-              <Line
-                key={index}
-                type="monotone"
-                dataKey={`Config ${index + 1}`}
-                stroke={`hsl(${index * 137.5 % 360}, 70%, 50%)`}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="mt-4 flex justify-end">
-        <Button onClick={handleExport} className="w-full lg:w-auto">
-          <Download className="mr-2 h-4 w-4" />
-          Export Chart and Configuration
-        </Button>
-      </div> */}
+          <DataTableDemo data={tableResult} />
         </CardContent>
       </Card>
     </div>
   );
 };
 
-export default InterestRateCalculator;
+const InterestRateCalculatorWithSuspense = () => {
+  return (
+    <Suspense>
+      <InterestRateCalculator />
+    </Suspense>
+  );
+};
+export default InterestRateCalculatorWithSuspense;

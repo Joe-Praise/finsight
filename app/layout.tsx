@@ -4,6 +4,7 @@ import './globals.css';
 import Sidebar from '@/components/sidebar/Sidebar';
 import SidebarContent from '@/components/sidebar/SidebarContent';
 import { ThemeProvider } from '@/components/theme-provider';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -44,18 +45,20 @@ export default function RootLayout({
         ${spaceGrotesk.variable}
          antialiased`}
       >
-        <ThemeProvider>
-          <main className='flex bg-background'>
-            <aside className='md:block h-screen sticky top-0 bottom-0 z-50 '>
-              <Sidebar>
-                <SidebarContent />
-              </Sidebar>
-            </aside>
-            <main className='w-full md:pt-10 px-2 overflow-y-hidden'>
-              {children}
+        <NuqsAdapter>
+          <ThemeProvider>
+            <main className='flex bg-background'>
+              <aside className='md:block h-screen sticky top-0 bottom-0 z-50 '>
+                <Sidebar>
+                  <SidebarContent />
+                </Sidebar>
+              </aside>
+              <main className='w-full md:pt-10 px-2 overflow-y-hidden'>
+                {children}
+              </main>
             </main>
-          </main>
-        </ThemeProvider>
+          </ThemeProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );

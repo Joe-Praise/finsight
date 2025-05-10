@@ -43,15 +43,6 @@ export class InterestCalculator {
     this.currency = config.currency;
   }
 
-  private format(value: number): string | number {
-    if (!this.locale || !this.currency) return value;
-    return new Intl.NumberFormat(this.locale, {
-      style: 'currency',
-      currency: this.currency,
-      minimumFractionDigits: 2,
-    }).format(value);
-  }
-
   calculateSimpleInterest(principal: number, months: number): number {
     const r = this.annualRate / 100;
     const t = months / 12;

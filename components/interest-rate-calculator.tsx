@@ -27,10 +27,21 @@ import {
   InterestTypeEnum,
 } from '@/lib/interest-math-module';
 import { calculateDuration } from '@/lib/helper';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
 
 interface IInterestConfig {
   type: InterestTypeEnum;
   principal: number | null;
+  requiredReturn?: number | null;
   rate: number | null;
   months: number | null;
   compoundFrequency?: string | null;
@@ -50,6 +61,10 @@ const interestType = [
     label: 'Continuous',
     value: InterestTypeEnum.Continuous,
   },
+  {
+    label: 'Required Deposit',
+    value: InterestTypeEnum['Required Return'],
+  },
 ];
 
 const frequencyType = Object.keys(CompoundingMap).map((key) => {
@@ -68,6 +83,7 @@ const InterestRateCalculator = () => {
     rate: null,
     months: null,
     return: null,
+    requiredReturn: null,
     compoundFrequency: 'annually',
   });
   const monthsBoundary = 600;
@@ -94,6 +110,7 @@ const InterestRateCalculator = () => {
       )
     )
       return;
+
     const interestCalc = new InterestCalculator({
       rate: interestConfig.rate ?? 0,
       frequency:
@@ -104,31 +121,42 @@ const InterestRateCalculator = () => {
       currency: 'USD',
     });
 
-    const results: Array<IInterestConfig> = [];
-    for (
-      let i = 1;
-      i <= Math.min(interestConfig.months ?? 0, monthsBoundary);
-      i++
-    ) {
-      const value = interestCalc
-        .calculate(interestConfig.principal ?? 0, i)
-        .toFixed(2);
+    if (interestConfig.type === InterestTypeEnum['Required Return']) {
+      const neededDeposit = interestCalc.requiredDeposit(
+        interestConfig.requiredReturn ?? 0,
+        interestConfig.months ?? 1
+      );
 
-      const data: IInterestConfig = {
-        type: interestConfig.type,
-        principal: interestConfig.principal,
-        rate: interestConfig.rate,
-        months: i,
-        return: parseFloat(value.toString()),
-      };
-      results.push(data);
-    }
-    const returnValue = results.at(-1);
-    if (returnValue !== undefined) {
-      setResult(returnValue.return?.toString() ?? null);
-      setTableResult(results);
-    }
+      console.log(
+        '🚀 ~ handleRunCalculation ~ neededDeposit:',
+        neededDeposit.toFixed(2)
+      );
+    } else {
+      const results: Array<IInterestConfig> = [];
+      for (
+        let i = 1;
+        i <= Math.min(interestConfig.months ?? 0, monthsBoundary);
+        i++
+      ) {
+        const value = interestCalc
+          .calculate(interestConfig.principal ?? 0, i)
+          .toFixed(2);
 
+        const data: IInterestConfig = {
+          type: interestConfig.type,
+          principal: interestConfig.principal,
+          rate: interestConfig.rate,
+          months: i,
+          return: parseFloat(value.toString()),
+        };
+        results.push(data);
+      }
+      const returnValue = results.at(-1);
+      if (returnValue !== undefined) {
+        setResult(returnValue.return?.toString() ?? null);
+        setTableResult(results);
+      }
+    }
     setOverlay((prev) => !prev);
     return;
   };
@@ -161,92 +189,65 @@ const InterestRateCalculator = () => {
 
   return (
     <div className='flex flex-col lg:flex-row min-h-screen w-full'>
-      <div className='flex lg:flex-col items-center justify-between lg:justify-start p-4 lg:py-4 bg-background border-b lg:border-r border-gray-200'>
-        <Button
-          variant='ghost'
-          size='icon'
-          onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
-          className='lg:mb-4'
-        >
-          <Menu className='h-6 w-6' />
-          <span className='sr-only'>
-            {isDescriptionOpen ? 'Close' : 'Open'} description
-          </span>
-        </Button>
-        {!isDescriptionOpen && (
-          <a
-            href='https://getconvoy.io/?utm_source=compareretries'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='lg:mt-auto'
-          >
-            <img
-              src='https://getconvoy.io/svg/convoy-logo-new.svg'
-              alt='Convoy'
-              className='w-6 h-6'
-            />
-          </a>
-        )}
-      </div>
-      <div
-        className={`    
-      transition-all duration-300 ease-in-out overflow-hidden
-      ${isDescriptionOpen ? 'lg:w-[30%] lg:min-w-[250px]' : 'h-0 lg:w-0'}
-      `}
-      >
-        {isDescriptionOpen && (
-          <div className='p-4 h-full flex flex-col gap-3'>
-            <div className='mb-4'>
-              <h2 className='text-2xl font-bold'>Interest Rate Visulaizer</h2>
-              <p className='text-sm text-muted-foreground'>
+      <div className='flex lg:flex-col items-center justify-between lg:justify-start p-4 lg:py-4 bg-background'>
+        <Drawer>
+          <DrawerTrigger>
+            <Button
+              variant='ghost'
+              size='icon'
+              onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
+              className='lg:mb-4 group'
+            >
+              <Menu className='h-6 w-6 group-hover:text-white  dark:group-hover:text-white' />
+              <span className='sr-only'>
+                {isDescriptionOpen ? 'Close' : 'Open'} description
+              </span>
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader className='text-left'>
+              <DrawerTitle>Interest Rate Visulaizer</DrawerTitle>
+              <DrawerDescription>
                 The Interest Rate Visualizer is an interactive tool designed to
                 help users understand and compare different types of interest
                 calculations: Simple Interest, Compound Interest, and Continuous
                 Interest. By visualizing how investments or loans grow over
                 time, this application provides insights into the impact of
                 various interest rates and compounding frequencies.
-              </p>
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className='p-4 h-full flex flex-col gap-3'>
+              <Card className='flex-grow overflow-hidden flex flex-col px-1 border-none'>
+                <CardHeader>
+                  <CardTitle>Types of Interest</CardTitle>
+                </CardHeader>
+                <CardContent className='space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto p-0'>
+                  <div>
+                    <ul className='list-disc list-inside text-sm text-muted-foreground space-y-2 flex-col gap-3'>
+                      {details_break_down?.map((detail, index) => {
+                        return (
+                          <li
+                            key={`${detail.title}_${detail.desc}_${index}__key`}
+                          >
+                            <span className='font-medium text-primary'>
+                              {detail.title}:
+                            </span>{' '}
+                            {detail.desc}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-
-            <Card className='flex-grow overflow-hidden flex flex-col px-1 border-none'>
-              <CardHeader>
-                <CardTitle>Types of Interest</CardTitle>
-              </CardHeader>
-              <CardContent className='space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto p-0'>
-                <div>
-                  <ul className='list-disc list-inside text-sm text-muted-foreground space-y-2 flex-col gap-3'>
-                    {details_break_down?.map((detail, index) => {
-                      return (
-                        <li
-                          key={`${detail.title}_${detail.desc}_${index}__key`}
-                        >
-                          <span className='font-medium text-primary'>
-                            {detail.title}:
-                          </span>{' '}
-                          {detail.desc}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              </CardContent>
-              {/* <div className='mt-4 hidden lg:flex flex-col items-center justify-center space-y-2'>
-                <span className='text-sm text-muted-foreground'>Built By</span>
-                <a
-                  href='https://getconvoy.io/?utm_source=compareretries'
-                  target='_blank'
-                  rel='noopener noreferrer'
-                >
-                  <img
-                    src='https://getconvoy.io/svg/convoy-logo-full-new.svg'
-                    alt='Convoy'
-                    className='h-6'
-                  />
-                </a>
-              </div> */}
-            </Card>
-          </div>
-        )}
+            <DrawerFooter>
+              <DrawerClose>
+                <Button>Close</Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
       </div>
 
       <Card className='flex-1 overflow-hidden'>
@@ -273,20 +274,18 @@ const InterestRateCalculator = () => {
                 Add New Configuration
               </Button>
             </DialogTrigger>
-            <DialogContent className='sm:max-w-[425px]'>
+            <DialogContent
+              className='sm:max-w-[425px]'
+              aria-describedby='dialog-description'
+            >
               <DialogHeader>
                 <DialogTitle>{'Add New Configuration'}</DialogTitle>
               </DialogHeader>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quo unde
-              quasi nam! Excepturi asperiores quidem fugit illo exercitationem
-              tempora sequi?
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  // editingIndex !== null ? handleUpdateConfig() : handleAddConfig()
-                }}
-                className='space-y-4'
-              >
+              <p id='dialog-description'>
+                This form allows you to add a new interest configuration by
+                specifying the type, principal, rate, and duration.
+              </p>
+              <form className='space-y-4'>
                 <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
                   <div>
                     <Label htmlFor='type'>Interest Type</Label>
@@ -296,23 +295,24 @@ const InterestRateCalculator = () => {
                       value={interestConfig.type || undefined}
                       onChange={handleInputChange}
                       className='w-full p-2 border rounded'
-                      defaultValue={'Select One'}
                     >
-                      {interestType.map((type, index) => {
-                        return (
-                          <option
-                            key={`${type.value}__${index}_key`}
-                            value={type.value}
-                          >
-                            {type.label}
-                          </option>
-                        );
-                      })}
+                      {interestType.map((type, index) => (
+                        <option
+                          key={`${type.value}__${index}_key`}
+                          value={type.value}
+                        >
+                          {type.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
-                  {interestConfig.type === InterestTypeEnum.Compound && (
+                  {(interestConfig.type === InterestTypeEnum.Compound ||
+                    interestConfig.type ===
+                      InterestTypeEnum['Required Return']) && (
                     <div>
-                      <Label htmlFor='type'>Interest Type</Label>
+                      <Label htmlFor='compoundFrequency'>
+                        Compound Frequency
+                      </Label>
                       <select
                         id='compoundFrequency'
                         name='compoundFrequency'
@@ -320,59 +320,100 @@ const InterestRateCalculator = () => {
                         onChange={handleInputChange}
                         className='w-full p-2 border rounded capitalize'
                       >
-                        {frequencyType.map((type, index) => {
-                          return (
-                            <option
-                              key={`${type.value}__${index}_key`}
-                              value={type.value}
-                            >
-                              {type.label}
-                            </option>
-                          );
-                        })}
+                        {frequencyType.map((type, index) => (
+                          <option
+                            key={`${type.value}__${index}_key`}
+                            value={type.value}
+                          >
+                            {type.label}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   )}
 
-                  <div>
-                    <Label htmlFor='principal'>Amount</Label>
-                    <Input
-                      id='principal'
-                      name='principal'
-                      type='text' // Changed from 'number' to 'text' to allow commas
-                      inputMode='numeric'
-                      pattern='[0-9,]*'
-                      onInput={(e) => {
-                        const target = e.target as HTMLInputElement;
-                        // Remove non-numeric characters
-                        let value = target.value.replace(/[^\d]/g, '');
-                        // Remove leading zeros
-                        value = value.replace(/^0+(?=\d)/, '');
-                        // Format with thousand separators
-                        value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                        target.value = value;
-                      }}
-                      value={
-                        interestConfig.principal
-                          ? interestConfig.principal.toLocaleString()
-                          : ''
-                      }
-                      onChange={(e) => {
-                        // Remove commas before converting to number
-                        const numericValue = e.target.value.replace(/,/g, '');
-                        const event = {
-                          ...e,
-                          target: {
-                            ...e.target,
-                            value: numericValue,
-                            name: 'principal',
-                            type: 'number',
-                          },
-                        };
-                        handleInputChange(event);
-                      }}
-                    />
-                  </div>
+                  {interestConfig.type ===
+                  InterestTypeEnum['Required Return'] ? (
+                    <div>
+                      <Label htmlFor='requiredReturn'>Required Return</Label>
+                      <Input
+                        id='requiredReturn'
+                        name='requiredReturn'
+                        type='text' // Changed from 'number' to 'text' to allow commas
+                        inputMode='numeric'
+                        pattern='[0-9,]*'
+                        onInput={(e) => {
+                          const target = e.target as HTMLInputElement;
+                          // Remove non-numeric characters
+                          let value = target.value.replace(/[^\d]/g, '');
+                          // Remove leading zeros
+                          value = value.replace(/^0+(?=\d)/, '');
+                          // Format with thousand separators
+                          value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                          target.value = value;
+                        }}
+                        value={
+                          interestConfig.requiredReturn
+                            ? interestConfig.requiredReturn.toLocaleString()
+                            : ''
+                        }
+                        onChange={(e) => {
+                          // Remove commas before converting to number
+                          const numericValue = e.target.value.replace(/,/g, '');
+                          const event = {
+                            ...e,
+                            target: {
+                              ...e.target,
+                              value: numericValue,
+                              name: 'requiredReturn',
+                              type: 'number',
+                            },
+                          };
+                          handleInputChange(event);
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <Label htmlFor='principal'>Amount</Label>
+                      <Input
+                        id='principal'
+                        name='principal'
+                        type='text' // Changed from 'number' to 'text' to allow commas
+                        inputMode='numeric'
+                        pattern='[0-9,]*'
+                        onInput={(e) => {
+                          const target = e.target as HTMLInputElement;
+                          // Remove non-numeric characters
+                          let value = target.value.replace(/[^\d]/g, '');
+                          // Remove leading zeros
+                          value = value.replace(/^0+(?=\d)/, '');
+                          // Format with thousand separators
+                          value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                          target.value = value;
+                        }}
+                        value={
+                          interestConfig.principal
+                            ? interestConfig.principal.toLocaleString()
+                            : ''
+                        }
+                        onChange={(e) => {
+                          // Remove commas before converting to number
+                          const numericValue = e.target.value.replace(/,/g, '');
+                          const event = {
+                            ...e,
+                            target: {
+                              ...e.target,
+                              value: numericValue,
+                              name: 'principal',
+                              type: 'number',
+                            },
+                          };
+                          handleInputChange(event);
+                        }}
+                      />
+                    </div>
+                  )}
                   <div>
                     <Label htmlFor='rate'>Rate (%)</Label>
                     <Input
@@ -405,50 +446,6 @@ const InterestRateCalculator = () => {
                       onChange={handleInputChange}
                     />
                   </div>
-                  {/* <div>
-                    <Label htmlFor='factor'>
-                      Factor (ms for linear, multiplier for exponential)
-                    </Label>
-                    <Input
-                      id='factor'
-                      name='factor'
-                      type='number'
-                      //   value={newConfig.factor}
-                        onChange={handleInputChange}
-                    />
-                  </div> */}
-                  {/* {newConfig.type === 'capped-exponential' && (
-                <div>
-                  <Label htmlFor="maxDuration">Max Duration (ms)</Label>
-                  <Input
-                    id="maxDuration"
-                    name="maxDuration"
-                    type="number"
-                    value={newConfig.maxDuration || ''}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              )}
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="jitter"
-                  checked={newConfig.jitter}
-                  onCheckedChange={handleJitterChange}
-                />
-                <Label htmlFor="jitter">Apply Jitter</Label>
-              </div>
-              {newConfig.jitter && (
-                <div>
-                  <Label htmlFor="jitterRange">Jitter Range (ms)</Label>
-                  <Input
-                    id="jitterRange"
-                    name="jitterRange"
-                    type="number"
-                    value={newConfig.jitterRange}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              )} */}
                 </div>
                 <Button
                   type='button'

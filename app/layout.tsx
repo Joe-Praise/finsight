@@ -51,7 +51,7 @@ export default function RootLayout({
                 <SidebarContent />
               </Sidebar>
             </aside>
-            <main className='w-full pt-10 px-2 md:px-8 overflow-y-hidden'>
+            <main className='w-full md:pt-10 px-2 overflow-y-hidden'>
               {children}
             </main>
           </main>

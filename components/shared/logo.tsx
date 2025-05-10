@@ -41,7 +41,7 @@ const Logo = (props: ILogo) => {
       )}
       {!isIcons && (
         <Link
-          href={''}
+          href={'/dashboard'}
           className='flex flex-col items-start h-full text-primary'
         >
           <span className='uppercase font-karla font-bold'>Finsight</span>

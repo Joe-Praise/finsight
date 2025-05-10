@@ -69,7 +69,7 @@ function Sidebar(props: ISidebarProps) {
           </button>
         </div>
 
-        <main
+        <aside
           className={cn('flex flex-col h-full overflow-hidden w-0 mx-auto', {
             'w-[237px] mx-auto': isOpen && !isIcons,
             'md:w-[237px] ': !isOpen && !isIcons,
@@ -79,12 +79,10 @@ function Sidebar(props: ISidebarProps) {
           {children}
           <section className='mt-auto'>
             <footer className='w-full font-semibold text-xs text-center'>
-              <div>
-                <p>this is where the logo will go</p>
-              </div>
+              <div>{/* <p>this is where the logo will go</p> */}</div>
             </footer>
           </section>
-        </main>
+        </aside>
       </section>
     </section>
   );

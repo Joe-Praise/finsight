@@ -21,12 +21,9 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  // DropdownMenuItem,
-  // DropdownMenuLabel,
-  // DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
+// import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -193,16 +190,16 @@ export function DataTableDemo(props: DataTable) {
   const end = Math.min(start + limit - 1, totalRows);
 
   return (
-    <div className='w-full'>
+    <div className='w-full border rounded-xl p-4'>
       <div className='flex items-center py-4'>
-        <Input
+        {/* <Input
           placeholder='Filter duration...'
           value={table.getColumn('return')?.getFilterValue() as string}
           onChange={(event) => {
             table.getColumn('return')?.setFilterValue(event.target.value);
           }}
           className='max-w-sm'
-        />
+        /> */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button className='ml-auto'>
@@ -214,8 +211,6 @@ export function DataTableDemo(props: DataTable) {
               .getAllColumns()
               .filter((column) => column.getCanHide())
               .map((column) => {
-                console.log('🚀 ~ .map ~ column:', column);
-
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}

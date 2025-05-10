@@ -5,11 +5,11 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
   Tooltip,
-  TooltipContent,
+  // TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useNavBarStore } from '@/store';
+// import { useNavBarStore } from '@/store';
 
 type NavLinkProps = {
   to: string;
@@ -22,10 +22,10 @@ export default function NavLink({
   to,
   children,
   className,
-  name,
-}: NavLinkProps) {
+}: // name,
+NavLinkProps) {
   const pathName = usePathname();
-  const { isIcons } = useNavBarStore();
+  // const { isIcons } = useNavBarStore();
 
   return (
     <TooltipProvider>
@@ -45,7 +45,7 @@ export default function NavLink({
             {children}
           </Link>
         </TooltipTrigger>
-        {isIcons && (
+        {/* {isIcons && (
           <TooltipContent
             avoidCollisions
             side='right'
@@ -54,7 +54,7 @@ export default function NavLink({
           >
             <p className='text-[18px] font-karla'>{name}</p>
           </TooltipContent>
-        )}
+        )} */}
       </Tooltip>
     </TooltipProvider>
   );

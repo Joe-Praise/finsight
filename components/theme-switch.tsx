@@ -19,7 +19,7 @@ const ThemeSwitch = (props: IThemeSwitchProps) => {
   if (!mounted)
     return (
       <Image
-        src=''
+        src='/'
         width={36}
         height={36}
         sizes='36x36'
@@ -42,7 +42,7 @@ const ThemeSwitch = (props: IThemeSwitchProps) => {
       }
     >
       <span>{resolvedTheme === 'dark' ? <Sun /> : <Moon />}</span>
-      {resolvedTheme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+      {!isIcons && (resolvedTheme === 'dark' ? 'Light Mode' : 'Dark Mode')}
     </button>
   );
 };

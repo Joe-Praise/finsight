@@ -34,6 +34,7 @@ import duration from 'dayjs/plugin/duration';
 import { DataTableDemo } from './interest-rate-table';
 import useFormatText from '@/hooks/useFormatText';
 import { cn } from '@/lib/utils';
+import { FormattedNumberInput } from './currencyInput';
 
 dayjs.extend(duration);
 
@@ -122,7 +123,6 @@ const InterestRateCalculator = () => {
   });
   const monthsBoundary = 600;
   const [tableResult, setTableResult] = useState<Array<IInterestConfig>>([]);
-
   const [result, setResult] = useState<string | null>(null);
 
   const handleInputChange = (
@@ -246,6 +246,64 @@ const InterestRateCalculator = () => {
     }% compounded ${interestConfig.compoundFrequency}.`;
   };
 
+  const cardsData = [
+    {
+      header: 'Principal Investment',
+      value: result ? interestConfig.principal : 0,
+      icon: (
+        <svg
+          xmlns='http://www.w3.org/2000/svg'
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+          strokeWidth='2'
+          className='h-4 w-4 text-muted-foreground'
+        >
+          <path d='M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' />
+        </svg>
+      ),
+    },
+    {
+      header: 'Returns',
+      value: result ? result : 0,
+      icon: (
+        <svg
+          xmlns='http://www.w3.org/2000/svg'
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+          strokeWidth='2'
+          className='h-4 w-4 text-muted-foreground'
+        >
+          <path d='M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' />
+        </svg>
+      ),
+    },
+    {
+      header: 'Interest Type',
+      value: result ? interestConfig.type : 'waiting on you...',
+      icon: (
+        <svg
+          xmlns='http://www.w3.org/2000/svg'
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+          strokeWidth='2'
+          className='h-4 w-4 text-muted-foreground'
+        >
+          <rect width='20' height='14' x='2' y='5' rx='2' />
+          <path d='M2 10h20' />
+        </svg>
+      ),
+    },
+  ];
+
   return (
     <div className='flex flex-col lg:flex-row min-h-screen w-full'>
       <div className='flex lg:flex-col items-center justify-between lg:justify-start p-4 lg:py-4 bg-background '>
@@ -264,7 +322,7 @@ const InterestRateCalculator = () => {
             </Button>
           </DrawerTrigger>
 
-          <DrawerContent className='h-screen  '>
+          <DrawerContent className='h-screen md:h-auto'>
             <DrawerHeader className='text-left sticky top-0'>
               <DrawerTitle>Interest Rate Visualizer</DrawerTitle>
               <DrawerDescription>
@@ -307,8 +365,8 @@ const InterestRateCalculator = () => {
               </Card>
             </div>
             <DrawerFooter className='sticky bottom-0 mt-auto'>
-              <DrawerClose asChild>
-                <Button>Close</Button>
+              <DrawerClose asChild className='mx-auto'>
+                <Button className='w-max'>Close</Button>
               </DrawerClose>
             </DrawerFooter>
           </DrawerContent>
@@ -322,110 +380,6 @@ const InterestRateCalculator = () => {
               Max Months: {monthsBoundary} (50 years)
             </Label>
             <p>{createResultStatement()}</p>
-          </div>
-
-          <div className='mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4'>
-            <Card className='border p-2'>
-              <CardHeader className='flex flex-row items-center justify-between pb-2'>
-                <CardTitle className='text-sm font-medium'>
-                  Total Revenue
-                </CardTitle>
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  viewBox='0 0 24 24'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth='2'
-                  className='h-4 w-4 text-muted-foreground'
-                >
-                  <path d='M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' />
-                </svg>
-              </CardHeader>
-              <CardContent>
-                <div className='text-2xl font-bold'>$45,231.89</div>
-                <p className='text-xs text-muted-foreground'>
-                  +20.1% from last month
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className='flex flex-row items-center justify-between pb-2'>
-                <CardTitle className='text-sm font-medium'>
-                  Subscriptions
-                </CardTitle>
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  viewBox='0 0 24 24'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth='2'
-                  className='h-4 w-4 text-muted-foreground'
-                >
-                  <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
-                  <circle cx='9' cy='7' r='4' />
-                  <path d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' />
-                </svg>
-              </CardHeader>
-              <CardContent>
-                <div className='text-2xl font-bold'>+2350</div>
-                <p className='text-xs text-muted-foreground'>
-                  +180.1% from last month
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className='flex flex-row items-center justify-between pb-2'>
-                <CardTitle className='text-sm font-medium'>Sales</CardTitle>
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  viewBox='0 0 24 24'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth='2'
-                  className='h-4 w-4 text-muted-foreground'
-                >
-                  <rect width='20' height='14' x='2' y='5' rx='2' />
-                  <path d='M2 10h20' />
-                </svg>
-              </CardHeader>
-              <CardContent>
-                <div className='text-2xl font-bold'>+12,234</div>
-                <p className='text-xs text-muted-foreground'>
-                  +19% from last month
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className='flex flex-row items-center justify-between pb-2'>
-                <CardTitle className='text-sm font-medium'>
-                  Active Users
-                </CardTitle>
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  viewBox='0 0 24 24'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth='2'
-                  className='h-4 w-4 text-muted-foreground'
-                >
-                  <path d='M22 12h-4l-3 9L9 3l-3 9H2' />
-                </svg>
-              </CardHeader>
-              <CardContent>
-                <div className='text-2xl font-bold'>+573</div>
-                <p className='text-xs text-muted-foreground'>
-                  +201 since last hour
-                </p>
-              </CardContent>
-            </Card>
           </div>
 
           <Dialog open={overlay} onOpenChange={setOverlay}>
@@ -500,98 +454,49 @@ const InterestRateCalculator = () => {
                   InterestTypeEnum['Required Return'] ? (
                     <div>
                       <Label htmlFor='requiredReturn'>Required Return</Label>
-                      <Input
+                      <FormattedNumberInput
+                        placeholder={'Enter Amount'}
+                        value={interestConfig.requiredReturn ?? null}
+                        onChange={(val) =>
+                          setInterestConfig((prev) => ({
+                            ...prev,
+                            requiredReturn: val,
+                          }))
+                        }
                         id='requiredReturn'
                         name='requiredReturn'
-                        type='text' // Changed from 'number' to 'text' to allow commas
-                        inputMode='numeric'
-                        pattern='[0-9,]*'
-                        onInput={(e) => {
-                          const target = e.target as HTMLInputElement;
-                          // Remove non-numeric characters
-                          let value = target.value.replace(/[^\d]/g, '');
-                          // Remove leading zeros
-                          value = value.replace(/^0+(?=\d)/, '');
-                          // Format with thousand separators
-                          value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                          target.value = value;
-                        }}
-                        value={
-                          interestConfig.requiredReturn
-                            ? interestConfig.requiredReturn.toLocaleString()
-                            : ''
-                        }
-                        onChange={(e) => {
-                          // Remove commas before converting to number
-                          const numericValue = e.target.value.replace(/,/g, '');
-                          const event = {
-                            ...e,
-                            target: {
-                              ...e.target,
-                              value: numericValue,
-                              name: 'requiredReturn',
-                              type: 'number',
-                            },
-                          };
-                          handleInputChange(event);
-                        }}
                       />
                     </div>
                   ) : (
                     <div>
                       <Label htmlFor='principal'>Amount</Label>
-                      <Input
+                      <FormattedNumberInput
+                        placeholder={'Enter Amount'}
+                        value={interestConfig.principal}
+                        onChange={(val) =>
+                          setInterestConfig((prev) => ({
+                            ...prev,
+                            principal: val,
+                          }))
+                        }
                         id='principal'
                         name='principal'
-                        type='text' // Changed from 'number' to 'text' to allow commas
-                        inputMode='numeric'
-                        pattern='[0-9,]*'
-                        onInput={(e) => {
-                          const target = e.target as HTMLInputElement;
-                          // Remove non-numeric characters
-                          let value = target.value.replace(/[^\d]/g, '');
-                          // Remove leading zeros
-                          value = value.replace(/^0+(?=\d)/, '');
-                          // Format with thousand separators
-                          value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                          target.value = value;
-                        }}
-                        value={
-                          interestConfig.principal
-                            ? interestConfig.principal.toLocaleString()
-                            : ''
-                        }
-                        onChange={(e) => {
-                          // Remove commas before converting to number
-                          const numericValue = e.target.value.replace(/,/g, '');
-                          const event = {
-                            ...e,
-                            target: {
-                              ...e.target,
-                              value: numericValue,
-                              name: 'principal',
-                              type: 'number',
-                            },
-                          };
-                          handleInputChange(event);
-                        }}
                       />
                     </div>
                   )}
                   <div>
                     <Label htmlFor='rate'>Rate (%)</Label>
-                    <Input
+                    <FormattedNumberInput
                       id='rate'
                       name='rate'
-                      type='number'
-                      inputMode='numeric'
-                      pattern='[0-9]*'
-                      onInput={(e) => {
-                        const target = e.target as HTMLInputElement;
-                        target.value = target.value.replace(/^0+(?=\d)/, '');
-                      }}
-                      value={interestConfig.rate ?? ''}
-                      onChange={handleInputChange}
+                      value={interestConfig.rate ?? null}
+                      placeholder='Enter Rate'
+                      onChange={(val) =>
+                        setInterestConfig((prev) => ({
+                          ...prev,
+                          rate: val,
+                        }))
+                      }
                     />
                   </div>
                   <div>
@@ -608,6 +513,7 @@ const InterestRateCalculator = () => {
                       }}
                       value={interestConfig.months ?? ''}
                       onChange={handleInputChange}
+                      placeholder='Enter Duration(months)'
                     />
                   </div>
                 </div>
@@ -623,43 +529,113 @@ const InterestRateCalculator = () => {
                     );
                   }}
                 >
-                  {'Add'} Configuration
+                  Calculate
                 </Button>
               </form>
             </DialogContent>
           </Dialog>
-          {/* 
-          <div className='overflow-x-auto'>
-            <Table className='mb-6'>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className='w-[100px]'>
-                    Duration <small>(months)</small>
-                  </TableHead>
-                  <TableHead>Interest Type</TableHead>
-                  <TableHead>Principle</TableHead>
-                  <TableHead>Rate</TableHead>
-                  <TableHead>Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {tableResult.map((config, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{config.type} </TableCell>
-                    <TableCell>
-                      {thousandSeperator(config.principal ?? 0)}
-                    </TableCell>
-                    <TableCell>{config.rate}%</TableCell>
-                    <TableCell>
-                      {thousandSeperator(config.return ?? 0) || 'N/A'}
-                    </TableCell>
-                    <TableCell>{config?.jitter ? 'Yes' : 'No'}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div> */}
+
+          <div className='my-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4'>
+            {cardsData.map((data, index) => {
+              return (
+                <Card
+                  className='border py-2 px-4'
+                  key={`${data.icon}__${index}`}
+                >
+                  <CardHeader className='flex flex-row items-center justify-between pb-2'>
+                    <CardTitle className='text-sm font-medium'>
+                      {data.header}
+                    </CardTitle>
+                    <span>{data.icon}</span>
+                  </CardHeader>
+                  <CardContent className='px-1 py-3'>
+                    <div className='text-xl font-bold'>
+                      {data.header.toLowerCase() ===
+                      'Interest Type'.toLowerCase()
+                        ? data.value
+                        : thousandSeperator(data.value ?? 0)}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+            {/* <Card>
+              <CardHeader className='flex flex-row items-center justify-between pb-2'>
+                <CardTitle className='text-sm font-medium'>
+                  Subscriptions
+                </CardTitle>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth='2'
+                  className='h-4 w-4 text-muted-foreground'
+                >
+                  <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
+                  <circle cx='9' cy='7' r='4' />
+                  <path d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' />
+                </svg>
+              </CardHeader>
+              <CardContent>
+                <div className='text-2xl font-bold'>+2350</div>
+                <p className='text-xs text-muted-foreground'>
+                  +180.1% from last month
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className='flex flex-row items-center justify-between pb-2'>
+                <CardTitle className='text-sm font-medium'>Sales</CardTitle>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth='2'
+                  className='h-4 w-4 text-muted-foreground'
+                >
+                  <rect width='20' height='14' x='2' y='5' rx='2' />
+                  <path d='M2 10h20' />
+                </svg>
+              </CardHeader>
+              <CardContent>
+                <div className='text-2xl font-bold'>+12,234</div>
+                <p className='text-xs text-muted-foreground'>
+                  +19% from last month
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className='flex flex-row items-center justify-between pb-2'>
+                <CardTitle className='text-sm font-medium'>
+                  Active Users
+                </CardTitle>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth='2'
+                  className='h-4 w-4 text-muted-foreground'
+                >
+                  <path d='M22 12h-4l-3 9L9 3l-3 9H2' />
+                </svg>
+              </CardHeader>
+              <CardContent>
+                <div className='text-2xl font-bold'>+573</div>
+                <p className='text-xs text-muted-foreground'>
+                  +201 since last hour
+                </p>
+              </CardContent>
+            </Card> */}
+          </div>
 
           <DataTableDemo data={tableResult} />
         </CardContent>

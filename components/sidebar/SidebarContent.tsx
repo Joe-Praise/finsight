@@ -5,21 +5,21 @@ import appRoutes from '@/navigation';
 import NavLink from './NavLink';
 import { Separator } from '../ui/seperator';
 // import { Moon } from 'lucide-react';
-import { useTheme } from 'next-themes';
+// import { useTheme } from 'next-themes';
 // import { useEffect, useState } from 'react';
 import { useNavBarStore } from '@/store';
 import { cn } from '@/lib/utils';
 import Logo from '../shared/logo';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '../ui/tooltip';
+// import {
+//   Tooltip,
+//   TooltipContent,
+//   TooltipProvider,
+//   TooltipTrigger,
+// } from '../ui/tooltip';
 import ThemeSwitch from '../theme-switch';
 
 export default function SidebarContent() {
-  const { resolvedTheme } = useTheme();
+  // const { resolvedTheme } = useTheme();
   const { isIcons } = useNavBarStore();
 
   // const [mode, setMode] = useState('light');
@@ -62,21 +62,25 @@ export default function SidebarContent() {
               key={`${route.path}-#${i}__${route.name}__key`}
               to={''}
               name={route.name}
-              className={cn('flex items-center gap-3', {
+              className={cn('flex items-center gap-3 relative', {
                 'justify-center w-[80%] mx-auto': isIcons,
               })}
             >
+              {route.isComing && (
+                <span className='absolute top-0 right-[0] border rounded-full text-[8px] px-1'>
+                  Coming Soon
+                </span>
+              )}
               <span>{route.icon}</span>
               {!isIcons && <span className='pt-1'>{route.name}</span>}
             </NavLink>
           );
         })}
 
-        <TooltipProvider>
+        <ThemeSwitch isIcons={isIcons} />
+        {/* <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger asChild>
-              <ThemeSwitch isIcons={isIcons} />
-            </TooltipTrigger>
+            <TooltipTrigger asChild></TooltipTrigger>
             {isIcons && (
               <TooltipContent
                 avoidCollisions
@@ -90,7 +94,7 @@ export default function SidebarContent() {
               </TooltipContent>
             )}
           </Tooltip>
-        </TooltipProvider>
+        </TooltipProvider> */}
       </section>
     </section>
   );

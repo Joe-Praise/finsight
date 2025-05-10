@@ -48,7 +48,7 @@ export default function RootLayout({
         <NuqsAdapter>
           <ThemeProvider>
             <main className='flex bg-background'>
-              <aside className='md:block h-screen sticky top-0 bottom-0 z-50 '>
+              <aside className='md:block h-screen sticky top-0 bottom-0 z-50'>
                 <Sidebar>
                   <SidebarContent />
                 </Sidebar>

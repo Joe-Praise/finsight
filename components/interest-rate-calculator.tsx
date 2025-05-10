@@ -308,7 +308,7 @@ const InterestRateCalculator = () => {
     <div className='flex flex-col lg:flex-row min-h-screen w-full'>
       <div className='flex lg:flex-col items-center justify-between lg:justify-start p-4 lg:py-4 bg-background '>
         <Drawer>
-          <DrawerTrigger asChild>
+          <DrawerTrigger asChild className=' ms-auto md:ms-0'>
             <Button
               variant='ghost'
               size='icon'

@@ -19,7 +19,7 @@ const ThemeSwitch = (props: IThemeSwitchProps) => {
   if (!mounted)
     return (
       <Image
-        src='/'
+        src='https://blocks.astratic.com/img/general-img-square.png'
         width={36}
         height={36}
         sizes='36x36'

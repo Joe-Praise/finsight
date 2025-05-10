@@ -28,10 +28,13 @@ function Sidebar(props: ISidebarProps) {
     <section>
       {/* Overlay for mobile */}
       <div
-        className={cn('fixed inset-0 z-40 transition-opacity md:hidden', {
-          'opacity-100 visible': isOpen,
-          'opacity-0 invisible': !isOpen,
-        })}
+        className={cn(
+          'fixed bg-background inset-0 z-40 transition-opacity md:hidden',
+          {
+            'opacity-100 visible': isOpen,
+            'opacity-0 invisible': !isOpen,
+          }
+        )}
         onClick={closeSidebar}
       ></div>
 
@@ -48,7 +51,7 @@ function Sidebar(props: ISidebarProps) {
         )}
       >
         {/* Toggle Button (Only for mobile) */}
-        <div className='absolute top-0 -right-[32px] z-50 md:hidden'>
+        <div className='absolute top-0 -right-[36px] z-50 md:hidden'>
           <button
             onClick={toggleSidebar}
             className='bg-nav-active rounded-[8px] p-1'
@@ -57,19 +60,19 @@ function Sidebar(props: ISidebarProps) {
               <PanelLeftClose
                 width={45}
                 height={30}
-                className='text-[50px] text-primary-100'
+                className='text-[50px] text-primary-100 dark:text-white text-black'
               />
             ) : (
               <PanelLeftOpen
                 width={45}
                 height={30}
-                className='text-[50px] text-primary-100'
+                className='text-[50px] text-primary-100 dark:text-white text-black'
               />
             )}
           </button>
         </div>
 
-        <aside
+        <div
           className={cn('flex flex-col h-full overflow-hidden w-0 mx-auto', {
             'w-[237px] mx-auto': isOpen && !isIcons,
             'md:w-[237px] ': !isOpen && !isIcons,
@@ -82,7 +85,7 @@ function Sidebar(props: ISidebarProps) {
               <div>{/* <p>this is where the logo will go</p> */}</div>
             </footer>
           </section>
-        </aside>
+        </div>
       </section>
     </section>
   );

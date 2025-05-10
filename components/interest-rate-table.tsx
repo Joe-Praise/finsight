@@ -270,7 +270,7 @@ export function DataTableDemo(props: DataTable) {
                   colSpan={columns.length}
                   className='h-24 text-center'
                 >
-                  No results.
+                  No data yet — give us a number to work with!
                 </TableCell>
               </TableRow>
             )}

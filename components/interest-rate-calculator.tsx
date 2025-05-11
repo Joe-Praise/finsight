@@ -555,7 +555,7 @@ const InterestRateCalculator = () => {
                     <span>{data.icon}</span>
                   </CardHeader>
                   <CardContent className='px-1 py-3'>
-                    <div className='text-xl font-bold'>
+                    <div className='text-xl font-bold capitalize'>
                       {data.header.toLowerCase() ===
                       'Interest Type'.toLowerCase()
                         ? data.value

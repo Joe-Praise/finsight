@@ -174,12 +174,18 @@ const InterestRateCalculator = () => {
       interestConfig.months ?? 1
     );
     setResult(neededDeposit.toString() ?? null);
+    setInterestConfig((prev) => {
+      return {
+        ...prev,
+        principal: neededDeposit,
+      };
+    });
 
     const results = generateResults(interestCalc, neededDeposit);
     const returnValue = results.at(-1);
 
-    if (returnValue !== undefined) {
-      setResult(neededDeposit.toString() ?? null);
+    if (returnValue?.return !== undefined) {
+      setResult(returnValue.return?.toString() ?? null);
       setTableResult(results);
     }
   };

@@ -30,12 +30,11 @@ const setPersistedState = (state: { isOpen: boolean; isIcons: boolean }) => {
   }
 };
 
-// Initialize with persisted state immediately to prevent flicker
+// Initialize with safe defaults to prevent flicker on mobile
 const getInitialState = () => {
-  const persistedState = getPersistedState();
   return {
-    isOpen: persistedState?.isOpen ?? false, // Default to closed to prevent flash
-    isIcons: persistedState?.isIcons ?? false,
+    isOpen: false, // Always start closed to prevent mobile flash
+    isIcons: false,
     isHydrated: false,
   };
 };
@@ -71,25 +70,24 @@ export const useNavBarStore = create<INavigationState>((set) => ({
     set((state) => {
       if (state.isHydrated) return state; // Already initialized
       
-      const persistedState = getPersistedState();
-      
-      if (persistedState) {
-        // Use persisted state if available
-        const newState = {
-          isOpen: persistedState.isOpen,
-          isIcons: persistedState.isIcons,
-          isHydrated: true,
-        };
-        return newState;
-      } else {
-        // Set defaults based on device type
-        const defaultState = {
-          isOpen: !isMobile, // Desktop: open, Mobile: closed
+      if (isMobile) {
+        // Mobile: ALWAYS start closed, ignore persisted state
+        const mobileState = {
+          isOpen: false,
           isIcons: false,
           isHydrated: true,
         };
-        setPersistedState({ isOpen: defaultState.isOpen, isIcons: defaultState.isIcons });
-        return defaultState;
+        return mobileState;
+      } else {
+        // Desktop: Use persisted state or default to open
+        const persistedState = getPersistedState();
+        const desktopState = {
+          isOpen: persistedState?.isOpen ?? true, // Default to open on desktop
+          isIcons: persistedState?.isIcons ?? false,
+          isHydrated: true,
+        };
+        setPersistedState({ isOpen: desktopState.isOpen, isIcons: desktopState.isIcons });
+        return desktopState;
       }
     });
   },

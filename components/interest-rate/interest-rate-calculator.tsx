@@ -339,7 +339,7 @@ const InterestRateCalculator = () => {
               </DrawerDescription>
             </DrawerHeader>
 
-            <div className='p-4 flex flex-col gap-3 overflow-y-auto pt-6'>
+            <div className='p-4 flex flex-col gap-3 overflow-y-auto pt-24 md:pt-6'>
               <Card className='flex flex-col px-1 border-none'>
                 <CardHeader className='pt-0'>
                   <CardTitle>Types of Interest</CardTitle>

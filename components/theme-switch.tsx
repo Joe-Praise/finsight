@@ -32,7 +32,7 @@ const ThemeSwitch = (props: IThemeSwitchProps) => {
   return (
     <button
       className={cn(
-        'flex justify-start items-center gap-3 w-full rounded-[8px] mt-2 ps-[16px] py-2.5 hover:bg-nav-active hover:bg-secondary text-primary hover:font-semibold bg-transparent leading-[18.7px]',
+        'flex justify-start items-center gap-3 w-full rounded-[8px] mt-2 ps-[16px] py-2.5 hover:bg-secondary text-foreground hover:text-primary hover:font-semibold bg-transparent leading-[18.7px] transition-colors',
         {
           'justify-center w-[80%] mx-auto ps-0': isIcons,
         }

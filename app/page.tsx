@@ -1,9 +1,7 @@
-import InterestRateCalculatorWithSuspense from '@/components/interest-rate-calculator';
+import { routes } from '@/navigation';
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <section>
-      <InterestRateCalculatorWithSuspense />
-    </section>
-  );
+  // This will only run if middleware fails for some reason
+  redirect(routes.dashboard.entry.path);
 }

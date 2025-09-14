@@ -13,16 +13,45 @@ interface ISidebarProps {
 
 function Sidebar(props: ISidebarProps) {
   const { children } = props;
-  const { isOpen, isIcons, toggleSidebar, closeSidebar } = useNavBarStore();
+  const { isOpen, isIcons, isHydrated, toggleSidebar, toggleSidebarIcons, closeSidebar, initializeSidebar } = useNavBarStore();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
 
+  const handleToggle = () => {
+    if (isMobile) {
+      toggleSidebar(); // Mobile: show/hide sidebar
+    } else {
+      toggleSidebarIcons(); // Desktop: toggle between full width and icon mode
+    }
+  };
+
+  // Initialize sidebar state based on device type (only on first load)
+  useEffect(() => {
+    initializeSidebar(isMobile);
+  }, [isMobile, initializeSidebar]);
+
+  // Auto-close sidebar on mobile when navigating (but preserve user preference)
   useEffect(() => {
     if (!isMobile) return;
-    toggleSidebar();
+    // Only close if sidebar is currently open (preserve user's preference to keep it closed)
+    if (isOpen) {
+      closeSidebar();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, searchParams]);
+
+  // Show loading state until hydration is complete to prevent flicker
+  if (!isHydrated) {
+    return (
+      <section>
+        {/* Placeholder to maintain layout */}
+        <section className="w-0 md:w-[293px] h-screen transition-all duration-300 ease-out">
+          {/* Empty placeholder */}
+        </section>
+      </section>
+    );
+  }
 
   return (
     <section>
@@ -41,42 +70,50 @@ function Sidebar(props: ISidebarProps) {
       {/* Sidebar */}
       <section
         className={cn(
-          `w-full flex flex-col shadow-md dark:shadow-gray-700  text-white transition-all duration-100 
-                ease-out md:w-[293px] md:min-w-60 md:static fixed top-0 left-0 h-screen z-50 py-3`,
+          `flex flex-col shadow-md dark:shadow-gray-700 text-white transition-all duration-300 
+                ease-out fixed top-0 left-0 h-screen z-50 py-3 md:static`,
           {
-            'w-[293px]': isOpen,
-            'w-0 min-w-0 max-w-0 md:max-w-[293px]': !isOpen,
-            'md:w-max md:min-w-max md:max-w-auto px-2': isIcons,
+            // Mobile: Show/hide completely
+            'w-[293px]': isOpen && isMobile,
+            'w-0 min-w-0': !isOpen && isMobile,
+
+            // Desktop: Always visible, adjust width
+            'md:w-[293px]': !isMobile && !isIcons,
+            'md:w-[80px]': !isMobile && isIcons,
           }
         )}
       >
-        {/* Toggle Button (Only for mobile) */}
-        <div className='absolute top-0 -right-[36px] z-50 md:hidden'>
+        {/* Toggle Button (Mobile and Desktop) */}
+        <div className='absolute top-0 -right-[36px] lg:-right-[30px] z-50'>
           <button
-            onClick={toggleSidebar}
-            className='bg-nav-active rounded-[8px] p-1'
+            onClick={handleToggle}
+            className='bg-secondary lg:bg-transparent rounded-[8px] p-1'
           >
-            {isOpen ? (
+            {(isMobile ? isOpen : !isIcons) ? (
               <PanelLeftClose
                 width={45}
                 height={30}
-                className='text-[50px] text-primary-100 dark:text-white text-black'
+                className='text-[50px] text-foreground'
               />
             ) : (
               <PanelLeftOpen
                 width={45}
                 height={30}
-                className='text-[50px] text-primary-100 dark:text-white text-black'
+                className='text-[50px] text-foreground'
               />
             )}
           </button>
         </div>
 
         <div
-          className={cn('flex flex-col h-full overflow-hidden w-0 mx-auto', {
-            'w-[237px] mx-auto': isOpen && !isIcons,
-            'md:w-[237px] ': !isOpen && !isIcons,
-            'md:w-auto': isIcons,
+          className={cn('flex flex-col h-full overflow-hidden mx-auto', {
+            // Mobile: Show/hide content
+            'w-[237px]': isOpen && isMobile,
+            'w-0': !isOpen && isMobile,
+
+            // Desktop: Adjust content width
+            'md:w-[237px]': !isMobile && !isIcons,
+            'md:w-auto md:px-2': !isMobile && isIcons,
           })}
         >
           {children}

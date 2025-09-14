@@ -23,7 +23,7 @@ export default function NavLink({
   children,
   className,
 }: // name,
-NavLinkProps) {
+  NavLinkProps) {
   const pathName = usePathname();
   // const { isIcons } = useNavBarStore();
 
@@ -34,9 +34,9 @@ NavLinkProps) {
           <Link
             href={to}
             className={cn(
-              'font-karla font-normal hover:bg-nav-active px-4 py-3 rounded-[8px] hover:bg-secondary text-primary hover:font-semibold bg-transparent leading-[18.7px]',
+              'font-karla font-normal hover:bg-secondary px-4 py-3 rounded-[8px] text-foreground hover:text-primary hover:font-semibold bg-transparent leading-[18.7px] transition-colors',
               {
-                'bg-nav-active rounded-lg text-primary-100 font-semibold':
+                'bg-primary text-primary-foreground font-semibold':
                   pathName.toLowerCase() === to.toLowerCase(),
               },
               className

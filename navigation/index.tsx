@@ -3,22 +3,22 @@ export const routes = {
   signIn: { path: '/sign-in' },
   dashboard: {
     entry: {
-      path: '/dashboard/interest-rates',
+      path: '/interest-rates',
     },
     loan_amortization: {
-      path: '/dashboard/loan-amortization-schedule',
+      path: '/loan-amortization-schedule',
     },
     stock_return_calculator: {
-      path: '/dashboard/stock-return-calculator',
+      path: '/stock-return-calculator',
     },
     investment_portfolio_performance: {
-      path: '/dashboard/investment-portfoilo-performance',
+      path: '/investment-portfoilo-performance',
     },
     break_even_analysis: {
-      path: '/dashboard/break-even-analysis',
+      path: '/break-even-analysis',
     },
     debt_payoff_calculator: {
-      path: '/dashboard/debt-payoff-calculator',
+      path: '/debt-payoff-calculator',
     },
   },
 };
@@ -27,9 +27,10 @@ import {
   LayoutDashboard,
   Hourglass,
   Handshake,
-  Settings,
   // Headset,
   Wallet,
+  Calculator,
+  Diameter,
 } from 'lucide-react';
 import { ReactElement } from 'react';
 
@@ -74,22 +75,24 @@ const appRoutes: Route[] = [
     name: 'Break Even',
     label: 'Break Even Analysis',
     path: routes.dashboard.break_even_analysis.path,
-    icon: <Settings />,
+    icon: <Diameter />,
     isComing: true,
   },
   {
     name: 'Debt Payoff Calculator',
     label: 'Debt Payoff',
     path: routes.dashboard.debt_payoff_calculator.path,
-    icon: <Settings />,
+    icon: <Calculator />,
     isComing: true,
   },
   { name: '', label: '', path: '', icon: <></>, isComing: true },
 
   // {
   //   name: 'Help center',
-  //   path: routes.dashboard.help_center.path,
+  //   label: "",
+  //   path: '',
   //   icon: <Headset />,
+  //   isComing: true
   // },
 ];
 

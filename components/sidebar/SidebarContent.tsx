@@ -4,35 +4,37 @@ import finsight from '@/public/finsight.png';
 import appRoutes from '@/navigation';
 import NavLink from './NavLink';
 import { Separator } from '../ui/seperator';
-// import { Moon } from 'lucide-react';
-// import { useTheme } from 'next-themes';
-// import { useEffect, useState } from 'react';
 import { useNavBarStore } from '@/store';
 import { cn } from '@/lib/utils';
 import Logo from '../shared/logo';
-// import {
-//   Tooltip,
-//   TooltipContent,
-//   TooltipProvider,
-//   TooltipTrigger,
-// } from '../ui/tooltip';
 import ThemeSwitch from '../theme-switch';
 
 export default function SidebarContent() {
-  // const { resolvedTheme } = useTheme();
   const { isIcons } = useNavBarStore();
 
-  // const [mode, setMode] = useState('light');
+  const badgeDisplay = (isComing: boolean) => {
+    if (!isComing) return null;
 
-  // useEffect(() => {
-  //   setTheme(mode);
-  // }, [mode, setTheme]);
+    if (isIcons) {
+      // Collapsed sidebar - show just a small dot
+      return (
+        <span className='absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 border border-background rounded-full'></span>
+      )
+    }
+
+    // Expanded sidebar - show full text
+    return (
+      <span className='absolute top-0 right-0 border border-muted-foreground rounded-full text-[8px] px-1 text-muted-foreground bg-muted whitespace-nowrap'>
+        Coming Soon
+      </span>
+    )
+  }
 
   return (
     <section className='h-full flex flex-col gap-6 w-full'>
       <header
         className={cn(
-          'w-full flex items-center mt-10 mb-[19px] text-primary ps-[28px] border-b-0 md:pt-0',
+          'w-full flex items-center mt-10 mb-[19px] text-foreground ps-[28px] border-b-0 md:pt-0',
           {
             'ps-0 justify-center': isIcons,
           }
@@ -52,7 +54,7 @@ export default function SidebarContent() {
             return (
               <Separator
                 key={`${route.path}-#${i}`}
-                className='my-7 bg-primary'
+                className='my-7 bg-border'
               />
             );
           }
@@ -60,17 +62,13 @@ export default function SidebarContent() {
           return (
             <NavLink
               key={`${route.path}-#${i}__${route.name}__key`}
-              to={''}
+              to={route.path}
               name={route.name}
               className={cn('flex items-center gap-3 relative', {
                 'justify-center w-[80%] mx-auto': isIcons,
               })}
             >
-              {route.isComing && (
-                <span className='absolute top-0 right-[0] border rounded-full text-[8px] px-1'>
-                  Coming Soon
-                </span>
-              )}
+              {badgeDisplay(route.isComing)}
               <span>{route.icon}</span>
               {!isIcons && <span className='pt-1'>{route.name}</span>}
             </NavLink>

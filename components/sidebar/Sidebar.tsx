@@ -28,7 +28,12 @@ function Sidebar(props: ISidebarProps) {
 
   // Initialize sidebar state based on device type (only on first load)
   useEffect(() => {
-    initializeSidebar(isMobile);
+    // Small delay to ensure mobile detection is accurate
+    const timer = setTimeout(() => {
+      initializeSidebar(isMobile);
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [isMobile, initializeSidebar]);
 
   // Auto-close sidebar on mobile when navigating (but preserve user preference)

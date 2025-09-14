@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
+  // Start with mobile-first assumption to prevent sidebar flash
+  const [isMobile, setIsMobile] = useState(true);
 
   useEffect(() => {
     const checkScreenSize = () =>

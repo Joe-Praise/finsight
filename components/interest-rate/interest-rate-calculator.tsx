@@ -1,17 +1,17 @@
 'use client';
 import React, { Suspense, useState } from 'react';
-import { Button } from './ui/button';
+import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Label } from './ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from './ui/dialog';
-import { Input } from './ui/input';
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import {
   CompoundingFrequency,
   CompoundingMap,
@@ -31,10 +31,10 @@ import {
 } from '@/components/ui/drawer';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { DataTableDemo } from './interest-rate-table';
+import { DataTableDemo } from '@/components/interest-rate/interest-rate-table';
 import useFormatText from '@/hooks/useFormatText';
 import { cn } from '@/lib/utils';
-import { FormattedNumberInput } from './currencyInput';
+import { FormattedNumberInput } from '../currencyInput';
 
 dayjs.extend(duration);
 
@@ -238,18 +238,16 @@ const InterestRateCalculator = () => {
         Number(result).toFixed(2)
       )} to earn ${thousandSeperator(
         (interestConfig.requiredReturn ?? 0).toFixed(2)
-      )} interest in ${calculateDuration(interestConfig.months ?? 0)} at ${
-        interestConfig.rate
-      }% compounded ${interestConfig.compoundFrequency}.`;
+      )} interest in ${calculateDuration(interestConfig.months ?? 0)} at ${interestConfig.rate
+        }% compounded ${interestConfig.compoundFrequency}.`;
     }
 
     return `Your deposit of ${thousandSeperator(
       Number(interestConfig.principal ?? 0).toFixed(2)
     )} will earn you ${thousandSeperator(
       Number(result).toFixed(2)
-    )} interest in ${calculateDuration(interestConfig.months ?? 0)} at ${
-      interestConfig.rate
-    }% compounded ${interestConfig.compoundFrequency}.`;
+    )} interest in ${calculateDuration(interestConfig.months ?? 0)} at ${interestConfig.rate
+      }% compounded ${interestConfig.compoundFrequency}.`;
   };
 
   const cardsData = [
@@ -329,7 +327,7 @@ const InterestRateCalculator = () => {
           </DrawerTrigger>
 
           <DrawerContent className='h-screen md:h-auto'>
-            <DrawerHeader className='text-left sticky top-0'>
+            <DrawerHeader className='text-left sticky top-0 bg-background z-10 border-b'>
               <DrawerTitle>Interest Rate Visualizer</DrawerTitle>
               <DrawerDescription>
                 The Interest Rate Visualizer is an interactive tool designed to
@@ -341,9 +339,9 @@ const InterestRateCalculator = () => {
               </DrawerDescription>
             </DrawerHeader>
 
-            <div className='p-4 flex flex-col gap-3 overflow-y-auto '>
+            <div className='p-4 flex flex-col gap-3 overflow-y-auto pt-6'>
               <Card className='flex flex-col px-1 border-none'>
-                <CardHeader>
+                <CardHeader className='pt-0'>
                   <CardTitle>Types of Interest</CardTitle>
                 </CardHeader>
                 <CardContent className='space-y-4 p-0'>
@@ -392,7 +390,7 @@ const InterestRateCalculator = () => {
             <DialogTrigger asChild>
               <Button
                 className='mb-4 w-full lg:w-auto'
-                // onClick={() => setOverlay((prev) => !prev)}
+              // onClick={() => setOverlay((prev) => !prev)}
               >
                 Calculate Interest
               </Button>
@@ -432,32 +430,32 @@ const InterestRateCalculator = () => {
                   </div>
                   {(interestConfig.type === InterestTypeEnum.Compound ||
                     interestConfig.type ===
-                      InterestTypeEnum['Required Return']) && (
-                    <div>
-                      <Label htmlFor='compoundFrequency'>
-                        Compound Frequency
-                      </Label>
-                      <select
-                        id='compoundFrequency'
-                        name='compoundFrequency'
-                        value={interestConfig.compoundFrequency || undefined}
-                        onChange={handleInputChange}
-                        className='w-full p-2 border rounded capitalize'
-                      >
-                        {frequencyType.map((type, index) => (
-                          <option
-                            key={`${type.value}__${index}_key`}
-                            value={type.value}
-                          >
-                            {type.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+                    InterestTypeEnum['Required Return']) && (
+                      <div>
+                        <Label htmlFor='compoundFrequency'>
+                          Compound Frequency
+                        </Label>
+                        <select
+                          id='compoundFrequency'
+                          name='compoundFrequency'
+                          value={interestConfig.compoundFrequency || undefined}
+                          onChange={handleInputChange}
+                          className='w-full p-2 border rounded capitalize'
+                        >
+                          {frequencyType.map((type, index) => (
+                            <option
+                              key={`${type.value}__${index}_key`}
+                              value={type.value}
+                            >
+                              {type.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
 
                   {interestConfig.type ===
-                  InterestTypeEnum['Required Return'] ? (
+                    InterestTypeEnum['Required Return'] ? (
                     <div>
                       <Label htmlFor='requiredReturn'>Required Return</Label>
                       <FormattedNumberInput
@@ -557,7 +555,7 @@ const InterestRateCalculator = () => {
                   <CardContent className='px-1 py-3'>
                     <div className='text-xl font-bold capitalize'>
                       {data.header.toLowerCase() ===
-                      'Interest Type'.toLowerCase()
+                        'Interest Type'.toLowerCase()
                         ? data.value
                         : thousandSeperator(data.value ?? 0)}
                     </div>
@@ -565,82 +563,6 @@ const InterestRateCalculator = () => {
                 </Card>
               );
             })}
-            {/* <Card>
-              <CardHeader className='flex flex-row items-center justify-between pb-2'>
-                <CardTitle className='text-sm font-medium'>
-                  Subscriptions
-                </CardTitle>
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  viewBox='0 0 24 24'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth='2'
-                  className='h-4 w-4 text-muted-foreground'
-                >
-                  <path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' />
-                  <circle cx='9' cy='7' r='4' />
-                  <path d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' />
-                </svg>
-              </CardHeader>
-              <CardContent>
-                <div className='text-2xl font-bold'>+2350</div>
-                <p className='text-xs text-muted-foreground'>
-                  +180.1% from last month
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className='flex flex-row items-center justify-between pb-2'>
-                <CardTitle className='text-sm font-medium'>Sales</CardTitle>
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  viewBox='0 0 24 24'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth='2'
-                  className='h-4 w-4 text-muted-foreground'
-                >
-                  <rect width='20' height='14' x='2' y='5' rx='2' />
-                  <path d='M2 10h20' />
-                </svg>
-              </CardHeader>
-              <CardContent>
-                <div className='text-2xl font-bold'>+12,234</div>
-                <p className='text-xs text-muted-foreground'>
-                  +19% from last month
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className='flex flex-row items-center justify-between pb-2'>
-                <CardTitle className='text-sm font-medium'>
-                  Active Users
-                </CardTitle>
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  viewBox='0 0 24 24'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth='2'
-                  className='h-4 w-4 text-muted-foreground'
-                >
-                  <path d='M22 12h-4l-3 9L9 3l-3 9H2' />
-                </svg>
-              </CardHeader>
-              <CardContent>
-                <div className='text-2xl font-bold'>+573</div>
-                <p className='text-xs text-muted-foreground'>
-                  +201 since last hour
-                </p>
-              </CardContent>
-            </Card> */}
           </div>
 
           <DataTableDemo data={tableResult} />
